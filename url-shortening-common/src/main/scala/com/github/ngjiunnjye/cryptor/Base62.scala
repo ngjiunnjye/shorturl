@@ -6,26 +6,25 @@ object Base62 {
   
   def encode(num: Long): String = {
     def loop(buf: String, left: Long): String = {
-      if (left < 1) buf
+      if (left < 62L) base62Dict((left % base62Size).toInt) + buf
       else {
-        loop(buf + base62Dict((left % base62Size).toInt), left / base62Size)
+        loop( base62Dict((left % base62Size).toInt) + buf, (left / base62Size))
       }
     }
     loop("", num)
   }
 
   def decode(encoded: String) : Long = {
-    val strR = encoded.reverse
-    def loop (num: Long, str : String): Long = {
-
-      if (str.length()==0) num
+    val str = encoded
+    def loop (sum: Long, str : String): Long = {
+      if (str.length()==1) sum + base62Dict.indexOf(str.head)
       else {
         val map = base62Dict.indexOf(str.head)
         if (map == -1) throw new Exception (s"Unsupported Character ${str.head} for base62 mapper")
-        loop (num * base62Size + map, str.tail)
+        loop (sum + scala.math.pow (base62Size,str.tail.size).toLong *  base62Dict.indexOf(str.head), str.tail)
       }
     }
-    loop (0,strR)
+    loop (0,str)
   }
 
 }
